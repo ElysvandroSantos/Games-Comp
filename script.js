@@ -1,576 +1,384 @@
 /**
  * Cruzadinha de Arquitetura Computacional
- * Jogo interativo para a disciplina de Arquitetura Computacional
- * 
- * Palavras baseadas no documento ARQCOMP_Exercicio_04_v3 (páginas 1 e 2)
- * 
- * TODAS AS COORDENADAS FORAM VALIDADAS automaticamente (algoritmo de backtracking):
- * 1. Zero conflitos de letras em celulas compartilhadas
- * 2. Cada palavra cruza pelo menos uma outra palavra
- * 3. Todas as palavras dentro dos limites do grid
- * 4. Tabuleiros compactos e organizados visualmente
+ * Tabuleiros gerados automaticamente a cada jogo (palavras do documento ARQCOMP_Exercicio_04_v3).
+ * c = pista dos níveis Fácil e Médio | h = pista (mais indireta) do nível Difícil
  */
 
-// ============================================================================
-// DADAS DAS PALAVRAS E PISTAS POR NÍVEL
-// Cada palavra tem: palavra, dica, direção (across/down), x, y, número
-// Coordenadas validadas por algoritmo de backtracking
-// ============================================================================
-
-const WORD_DATA = {
-  // ============================================================================
-  // NÍVEL FÁCIL - 8 palavras (Grade 11x11, tabuleiro compacto)
-  // ============================================================================
-  easy: {
-    words: [
-      { word: 'FLASH', clue: 'Memória não volátil usada em pendrives e SSDs.', direction: 'down', x: 9, y: 3, number: 1 },
-      { word: 'DMA', clue: 'Transfere dados sem passar pela CPU.', direction: 'down', x: 7, y: 5, number: 2 },
-      { word: 'UC', clue: 'Unidade que coordena as atividades do processador.', direction: 'down', x: 8, y: 6, number: 3 },
-      { word: 'CACHE', clue: 'Memória rápida que guarda dados frequentemente usados.', direction: 'across', x: 6, y: 7, number: 4 },
-      { word: 'CPU', clue: 'O cérebro do computador que executa instruções.', direction: 'down', x: 8, y: 7, number: 5 },
-      { word: 'RAM', clue: 'Memória volátil que armazena dados temporariamente.', direction: 'down', x: 10, y: 8, number: 6 },
-      { word: 'ULA', clue: 'Faz as contas e operações lógicas dentro da CPU.', direction: 'across', x: 8, y: 9, number: 7 },
-      { word: 'ROM', clue: 'Memória que não se apaga ao desligar o computador.', direction: 'across', x: 8, y: 10, number: 8 },
-    ],
-    gridWidth: 11,
-    gridHeight: 11,
-  },
-
-  // ============================================================================
-  // NÍVEL MÉDIO - 12 palavras (Grade 18x18, tabuleiro compacto)
-  // ============================================================================
-  medium: {
-    words: [
-      { word: 'UC', clue: 'Interpreta e controla o fluxo de instruções.', direction: 'down', x: 16, y: 1, number: 1 },
-      { word: 'CPU', clue: 'Unidade que processa os dados do sistema.', direction: 'down', x: 16, y: 2, number: 2 },
-      { word: 'EEPROM', clue: 'Memória que pode ser apagada e reprogramada eletricamente.', direction: 'down', x: 15, y: 3, number: 3 },
-      { word: 'ULA', clue: 'Executa operações aritméticas e lógicas.', direction: 'down', x: 16, y: 4, number: 4 },
-      { word: 'MEMORIADEMASSA', clue: 'Dispositivo para armazenamento permanente de grande volume.', direction: 'down', x: 17, y: 4, number: 5 },
-      { word: 'ROM', clue: 'Armazena instruções de inicialização.', direction: 'down', x: 15, y: 6, number: 0 },
-      { word: 'RAM', clue: 'Memória de acesso rápido e temporário.', direction: 'across', x: 15, y: 6, number: 6 },
-      { word: 'CACHE', clue: 'Pequena memória muito veloz próxima ao processador.', direction: 'down', x: 16, y: 7, number: 7 },
-      { word: 'DMA', clue: 'Transfere dados direto entre periféricos e memória.', direction: 'across', x: 14, y: 8, number: 8 },
-      { word: 'DATABUS', clue: 'Transporta os dados entre os componentes.', direction: 'down', x: 14, y: 9, number: 9 },
-      { word: 'FLASH', clue: 'Armazena dados mesmo sem energia elétrica.', direction: 'across', x: 12, y: 10, number: 10 },
-      { word: 'ADDRESSBUS', clue: 'Leva o endereço da memória a ser acessada.', direction: 'across', x: 8, y: 16, number: 11 },
-    ],
-    gridWidth: 18,
-    gridHeight: 18,
-  },
-
-  // ============================================================================
-  // NÍVEL DIFÍCIL - 16 palavras (Grade 24x24, tabuleiro compacto)
-  // ============================================================================
-  hard: {
-    words: [
-      { word: 'MICROCONTROLADOR', clue: 'Computador em miniatura integrado em um único chip.', direction: 'down', x: 19, y: 2, number: 1 },
-      { word: 'QUADCORE', clue: 'Processador com quatro núcleos de execução.', direction: 'across', x: 4, y: 12, number: 2 },
-      { word: 'REGISTRADORES', clue: 'Locais de armazenamento muito rápidos dentro do processador.', direction: 'across', x: 10, y: 12, number: 3 },
-      { word: 'DATABUS', clue: 'Caminho pelos quais os dados viajam internamente.', direction: 'down', x: 22, y: 13, number: 4 },
-      { word: 'DUALCORE', clue: 'Processador com dois núcleos de execução.', direction: 'down', x: 23, y: 13, number: 5 },
-      { word: 'MEMORIADEMASSA', clue: 'HD ou SSD que guarda arquivos mesmo desligado.', direction: 'across', x: 9, y: 14, number: 6 },
-      { word: 'FLASH', clue: 'Memória usada em SSDs e cartões de memória.', direction: 'down', x: 18, y: 16, number: 7 },
-      { word: 'DMA', clue: 'Acesso direto à memória sem interrupção do processador.', direction: 'across', x: 20, y: 16, number: 8 },
-      { word: 'ADDRESSBUS', clue: 'Especifica onde os dados devem ser lidos ou escritos.', direction: 'across', x: 13, y: 19, number: 9 },
-      { word: 'CACHE', clue: 'Buffer rápido entre processador e memória principal.', direction: 'across', x: 19, y: 20, number: 11 },
-      { word: 'CPU', clue: 'Unidade central que processa todas as instruções do computador.', direction: 'down', x: 21, y: 20, number: 12 },
-      { word: 'UC', clue: 'Controla a sequência de operações da CPU.', direction: 'down', x: 21, y: 19, number: 10 },
-      { word: 'RAM', clue: 'Memória temporária que é limpa ao desligar o sistema.', direction: 'down', x: 23, y: 21, number: 13 },
-      { word: 'ROM', clue: 'Memória somente leitura com dados fixos.', direction: 'across', x: 21, y: 23, number: 16 },
-      { word: 'EEPROM', clue: 'Memória não volátil regravável por meio elétrico.', direction: 'across', x: 18, y: 23, number: 15 },
-      { word: 'ULA', clue: 'Executa cálculos e decisões lógicas do processador.', direction: 'across', x: 21, y: 22, number: 14 },
-    ],
-    gridWidth: 24,
-    gridHeight: 24,
-  },
+/*DATA-START*/
+const WORDS = {
+  CPU: { c: 'Cérebro do computador: busca, decodifica e executa as instruções dos programas.', h: 'Executa o ciclo de busca, decodificação e execução que dá vida aos programas.' },
+  ULA: { c: 'Parte do processador que faz as contas e compara valores.', h: 'Bloco que soma, subtrai e compara valores e devolve flags de resultado.' },
+  UC: { c: 'Parte da CPU que dá as ordens aos demais blocos durante a execução.', h: 'Decodifica instruções e emite os sinais que coordenam o restante do hardware.' },
+  REGISTRADORES: { c: 'Minúsculos guardadores dentro da CPU, os mais rápidos de toda a hierarquia.', h: 'Topo da hierarquia de armazenamento: acesso em um único ciclo de clock.' },
+  RAM: { c: 'Espaço de trabalho volátil onde ficam os programas em uso; apaga ao desligar.', h: 'Seu conteúdo some quando a energia acaba; é onde o programa em execução reside.' },
+  ROM: { c: 'Guarda código fixo de fábrica, que sobrevive ao desligamento e não muda em uso.', h: 'Abriga o firmware de inicialização, gravado na fabricação e raramente alterado.' },
+  EEPROM: { c: 'Mantém dados sem energia e pode ser regravada por sinais elétricos, byte a byte.', h: 'Retém configurações sem energia e aceita regravação elétrica sem retirar o chip.' },
+  FLASH: { c: 'Tipo de armazenamento sem energia usado em pendrives e SSDs, apagado em blocos.', h: 'Evolução regravável por blocos que domina SSDs, cartões e pendrives.' },
+  CACHE: { c: 'Espaço pequeno e veloz perto do núcleo que guarda cópias do que é mais usado.', h: 'Camadas L1, L2 e L3 reduzem a diferença de velocidade entre processador e RAM.' },
+  MEMORIADEMASSA: { c: 'Guarda arquivos por longo prazo e em grande volume, como HD e SSD.', h: 'Nível mais lento e mais barato por byte, que persiste mesmo desligado.' },
+  DMA: { c: 'Recurso que permite a periféricos trocar informação com a RAM sem ocupar a CPU.', h: 'Controlador que move blocos entre periférico e RAM enquanto o processador faz outra tarefa.' },
+  ADDRESSBUS: { c: 'Via de sentido único em que a CPU indica a posição que quer acessar.', h: 'Via unidirecional cuja largura em bits define quantas posições da RAM o processador alcança.' },
+  DATABUS: { c: 'Via de mão dupla que carrega o conteúdo lido ou gravado entre CPU e memória.', h: 'Via bidirecional cuja largura define quantos bits trafegam por transferência.' },
+  MICROCONTROLADOR: { c: 'Chip único com processador, memória e portas de entrada e saída, comum em sistemas embarcados.', h: 'Solução de chip único para dispositivos embarcados, como o coração de um Arduino.' },
+  DUALCORE: { c: 'Chip de CPU que reúne duas unidades de execução independentes.', h: 'CPU com paralelismo real em duas frentes simultâneas no mesmo encapsulamento.' },
+  QUADCORE: { c: 'Chip de CPU que reúne quatro unidades de execução independentes.', h: 'CPU com paralelismo real em quatro frentes simultâneas no mesmo encapsulamento.' },
 };
-
-// ============================================================================
-// ESTADO DO JOGO
-// ============================================================================
-
-const DIFFICULTY_ORDER = ['easy', 'medium', 'hard'];
-const DIFFICULTY_LABELS = {
-  easy: { label: 'Fácil', wordCount: 8, class: 'facil' },
-  medium: { label: 'Médio', wordCount: 12, class: 'medio' },
-  hard: { label: 'Difícil', wordCount: 16, class: 'dificil' },
+const LEVELS = {
+  easy: { label: 'Fácil', n: 12 },
+  medium: { label: 'Médio', n: 14 },
+  hard: { label: 'Difícil', n: 16 },
 };
+/*DATA-END*/
 
-let gameState = {
-  currentDifficultyIndex: 0,
-  currentDifficulty: 'easy',
-  levelNumber: 1,
-  words: [],
-  gridWidth: 0,
-  gridHeight: 0,
-  timerSeconds: 1800, // 30 minutos
-  timerInterval: null,
-  timerRunning: false,
-  startTime: null,
-  solvedWords: new Set(),
-  totalWords: 0,
-  gameActive: false,
-  wrongCheckedWords: new Set(),
-};
+/*GEN-START*/
+const K = (x, y) => x + ',' + y;
 
-// Elementos DOM
-const elements = {
-  crossword: document.getElementById('crossword'),
-  cluesList: document.getElementById('clues-list'),
-  timerDisplay: document.getElementById('timer-display'),
-  scoreDisplay: document.getElementById('score-display'),
-  levelDisplay: document.getElementById('level-display'),
-  difficultyDisplay: document.getElementById('difficulty-display'),
-  startBtn: document.getElementById('start-btn'),
-  restartBtn: document.getElementById('restart-btn'),
-  gameoverPopup: document.getElementById('gameover-popup'),
-  levelcompletePopup: document.getElementById('levelcomplete-popup'),
-  gameoverMessage: document.getElementById('gameover-message'),
-  levelcompleteMessage: document.getElementById('levelcomplete-message'),
-  levelcompleteStats: document.getElementById('levelcomplete-stats'),
-  gameoverRetry: document.getElementById('gameover-retry'),
-  levelcompleteNext: document.getElementById('levelcomplete-next'),
-};
-
-// ============================================================================
-// INICIALIZAÇÃO
-// ============================================================================
-
-function init() {
-  elements.startBtn.addEventListener('click', startGame);
-  elements.restartBtn.addEventListener('click', restartLevel);
-  elements.gameoverRetry.addEventListener('click', () => {
-    closePopup(elements.gameoverPopup);
-    restartLevel();
-  });
-  elements.levelcompleteNext.addEventListener('click', () => {
-    closePopup(elements.levelcompletePopup);
-    nextLevel();
-  });
-
-  renderLevelInfo();
-  updateScoreDisplay();
-}
-
-// ============================================================================
-// CONTROLE DE NÍVEIS
-// ============================================================================
-
-function renderLevelInfo() {
-  const diff = DIFFICULTY_LABELS[gameState.currentDifficulty];
-  elements.levelDisplay.textContent = gameState.levelNumber;
-  elements.difficultyDisplay.textContent = diff.label;
-  elements.difficultyDisplay.className = 'status-value badge ' + diff.class;
-}
-
-function startGame() {
-  if (gameState.gameActive) return;
-
-  gameState.gameActive = true;
-  gameState.timerRunning = true;
-  gameState.startTime = Date.now();
-
-  loadLevel(gameState.currentDifficulty);
-  renderCrossword();
-  renderClues();
-  startTimer();
-
-  elements.startBtn.style.display = 'none';
-  elements.restartBtn.style.display = 'inline-block';
-}
-
-function loadLevel(difficulty) {
-  const data = WORD_DATA[difficulty];
-  gameState.words = data.words;
-  gameState.gridWidth = data.gridWidth;
-  gameState.gridHeight = data.gridHeight;
-  gameState.solvedWords = new Set();
-  gameState.wrongCheckedWords = new Set();
-  gameState.totalWords = data.words.length;
-  gameState.timerSeconds = 1800;
-
-  renderLevelInfo();
-  updateScoreDisplay();
-}
-
-function nextLevel() {
-  gameState.currentDifficultyIndex = (gameState.currentDifficultyIndex + 1) % DIFFICULTY_ORDER.length;
-  gameState.currentDifficulty = DIFFICULTY_ORDER[gameState.currentDifficultyIndex];
-  gameState.levelNumber++;
-  loadLevel(gameState.currentDifficulty);
-  renderCrossword();
-  renderClues();
-  startTimer();
-}
-
-function restartLevel() {
-  stopTimer();
-  gameState.timerSeconds = 1800;
-  gameState.timerRunning = false;
-  gameState.startTime = null;
-  gameState.solvedWords = new Set();
-  gameState.wrongCheckedWords = new Set();
-
-  renderCrossword();
-  renderClues();
-  updateScoreDisplay();
-  updateTimerDisplay();
-
-  elements.startBtn.style.display = 'inline-block';
-  elements.restartBtn.style.display = 'none';
-  gameState.gameActive = false;
-}
-
-// ============================================================================
-// TIMER
-// ============================================================================
-
-function startTimer() {
-  stopTimer();
-  gameState.timerRunning = true;
-  gameState.startTime = Date.now() - (1800 - gameState.timerSeconds) * 1000;
-
-  gameState.timerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
-    gameState.timerSeconds = 1800 - elapsed;
-
-    if (gameState.timerSeconds <= 0) {
-      gameState.timerSeconds = 0;
-      stopTimer();
-      showGameOver();
-    } else {
-      updateTimerDisplay();
-    }
-  }, 1000);
-
-  updateTimerDisplay();
-}
-
-function stopTimer() {
-  if (gameState.timerInterval) {
-    clearInterval(gameState.timerInterval);
-    gameState.timerInterval = null;
+function shuffle(a) {
+  a = [...a];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
-  gameState.timerRunning = false;
+  return a;
 }
 
-function addTime(seconds) {
-  gameState.timerSeconds += seconds;
-  if (gameState.timerSeconds > 1800) gameState.timerSeconds = 1800;
-  updateTimerDisplay();
+// Verifica se a palavra w cabe em (x,y) na direção d sem letras conflitantes nem palavras coladas
+function fits(g, w, x, y, d) {
+  const dx = d === 'across' ? 1 : 0, dy = 1 - dx;
+  if (g.has(K(x - dx, y - dy)) || g.has(K(x + dx * w.length, y + dy * w.length))) return false;
+  let cross = 0;
+  for (let i = 0; i < w.length; i++) {
+    const cx = x + dx * i, cy = y + dy * i, c = g.get(K(cx, cy));
+    if (c) {
+      if (c.l !== w[i] || c.dirs.has(d)) return false;
+      cross++;
+    } else if (g.has(K(cx + dy, cy + dx)) || g.has(K(cx - dy, cy - dx))) return false;
+  }
+  return cross > 0;
 }
 
-function removeTime(seconds) {
-  gameState.timerSeconds -= seconds;
-  if (gameState.timerSeconds < 0) gameState.timerSeconds = 0;
-  updateTimerDisplay();
+function put(g, placed, w, x, y, d) {
+  const dx = d === 'across' ? 1 : 0, dy = 1 - dx;
+  for (let i = 0; i < w.length; i++) {
+    const k = K(x + dx * i, y + dy * i);
+    const c = g.get(k) || { l: w[i], dirs: new Set() };
+    c.dirs.add(d);
+    g.set(k, c);
+  }
+  placed.push({ word: w, x, y, dir: d });
 }
 
-function updateTimerDisplay() {
-  const m = Math.floor(gameState.timerSeconds / 60);
-  const s = gameState.timerSeconds % 60;
-  elements.timerDisplay.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-}
-
-// ============================================================================
-// RENDERIZAÇÃO DO TABULEIRO
-// ============================================================================
-
-function renderCrossword() {
-  elements.crossword.innerHTML = '';
-  elements.crossword.style.gridTemplateColumns = `repeat(${gameState.gridWidth}, 50px)`;
-  elements.crossword.style.gridTemplateRows = `repeat(${gameState.gridHeight}, 50px)`;
-
-  const cellMap = {};
-  const wordStarts = {};
-
-  gameState.words.forEach((wordObj, wi) => {
-    const { word, x, y, direction } = wordObj;
-    for (let i = 0; i < word.length; i++) {
-      const cx = direction === 'across' ? x + i : x;
-      const cy = direction === 'down' ? y + i : y;
-      const key = `${cx},${cy}`;
-
-      if (!cellMap[key]) {
-        cellMap[key] = { letter: word[i], words: [] };
+function candidates(g, placed, w) {
+  const out = [];
+  for (const p of placed) {
+    const d = p.dir === 'across' ? 'down' : 'across';
+    for (let i = 0; i < p.word.length; i++) {
+      for (let j = 0; j < w.length; j++) {
+        if (p.word[i] !== w[j]) continue;
+        const cx = p.dir === 'across' ? p.x + i : p.x;
+        const cy = p.dir === 'across' ? p.y : p.y + i;
+        const x = d === 'across' ? cx - j : cx;
+        const y = d === 'down' ? cy - j : cy;
+        if (fits(g, w, x, y, d)) out.push({ x, y, d });
       }
-      cellMap[key].letter = word[i];
-      cellMap[key].words.push({ wordIndex: wi, charIndex: i });
     }
+  }
+  return out;
+}
 
-    const startKey = `${x},${y}`;
-    if (!wordStarts[startKey]) {
-      wordStarts[startKey] = wordObj.number;
+function normalize(placed) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+  for (const p of placed) {
+    const ex = p.dir === 'across' ? p.x + p.word.length - 1 : p.x;
+    const ey = p.dir === 'down' ? p.y + p.word.length - 1 : p.y;
+    x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y);
+    x1 = Math.max(x1, ex); y1 = Math.max(y1, ey);
+  }
+  const words = placed.map(p => ({ word: p.word, dir: p.dir, x: p.x - x0, y: p.y - y0 }));
+  const starts = [...new Set(words.map(w => w.y * 1000 + w.x))].sort((a, b) => a - b);
+  words.forEach(w => { w.number = starts.indexOf(w.y * 1000 + w.x) + 1; });
+  return { words, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+// Gera um tabuleiro com todas as palavras de "names"; retorna o mais compacto de várias tentativas
+function generate(names) {
+  let best = null;
+  const sorted = [...names].sort((a, b) => b.length - a.length);
+  for (let t = 0; t < 80; t++) {
+    const g = new Map(), placed = [];
+    put(g, placed, sorted[0], 0, 0, Math.random() < 0.5 ? 'across' : 'down');
+    const rest = sorted.slice(1)
+      .map(w => ({ w, s: w.length + Math.random() * 5 }))
+      .sort((a, b) => b.s - a.s).map(o => o.w);
+    let ok = true;
+    for (const w of rest) {
+      const c = candidates(g, placed, w);
+      if (!c.length) { ok = false; break; }
+      const p = c[Math.floor(Math.random() * c.length)];
+      put(g, placed, w, p.x, p.y, p.d);
     }
-  });
+    if (!ok) continue;
+    const lay = normalize(placed);
+    if (!best || lay.w * lay.h < best.w * best.h) best = lay;
+  }
+  return best;
+}
 
-  for (let y = 0; y < gameState.gridHeight; y++) {
-    for (let x = 0; x < gameState.gridWidth; x++) {
-      const key = `${y},${x}`;
-      const cell = cellMap[key];
+function makeLayout(diff) {
+  for (let i = 0; i < 50; i++) {
+    const names = shuffle(Object.keys(WORDS)).slice(0, LEVELS[diff].n);
+    const lay = generate(names);
+    if (lay) return lay;
+  }
+  return null;
+}
+/*GEN-END*/
 
-      const cellEl = document.createElement('div');
-      cellEl.className = 'cell';
-      cellEl.dataset.y = y;
-      cellEl.dataset.x = x;
+// ============================================================================
+// JOGO
+// ============================================================================
+if (typeof document !== 'undefined') {
+  const ORDER = ['easy', 'medium', 'hard'];
+  const $ = id => document.getElementById(id);
+  const el = {
+    board: $('crossword'), across: $('clues-across'), down: $('clues-down'),
+    timer: $('timer-display'), score: $('score-display'), info: $('words-count'),
+    level: $('level'), newBtn: $('new-game-btn'), checkBtn: $('check-btn'), restartBtn: $('restart-btn'),
+    goPopup: $('gameover-popup'), goMsg: $('gameover-message'), goRetry: $('gameover-retry'), goHome: $('gameover-home'),
+    lcPopup: $('levelcomplete-popup'), lcStats: $('levelcomplete-stats'), lcNext: $('levelcomplete-next'),
+  };
+  const S = { diff: 'easy', level: 1, layout: null, words: [], cells: new Map(), solved: new Set(), lastWrong: {},
+    remaining: 1800, elapsed: 0, timer: null, active: false, dir: 'across' };
 
-      if (cell) {
-        cellEl.classList.add('has-letter');
-        const input = document.createElement('input');
-        input.maxLength = 1;
-        input.dataset.y = y;
-        input.dataset.x = x;
-        input.addEventListener('input', handleCellInput);
-        input.addEventListener('keydown', handleCellKeydown);
-        cellEl.appendChild(input);
+  // ---------- fluxo ----------
+  function startNewGame() {
+    const v = el.level.value;
+    S.diff = v === 'random' ? ORDER[Math.floor(Math.random() * 3)] : v;
+    S.level = 1;
+    newLayout();
+  }
+  function newLayout() {
+    S.layout = makeLayout(S.diff);
+    loadLayout();
+  }
+  function loadLayout() {
+    S.solved = new Set(); S.lastWrong = {}; S.remaining = 1800; S.elapsed = 0; S.cells = new Map();
+    const field = S.diff === 'hard' ? 'h' : 'c';
+    S.words = S.layout.words.map(w => ({
+      ...w, clue: WORDS[w.word][field],
+      keys: [...w.word].map((_, i) => K(w.dir === 'across' ? w.x + i : w.x, w.dir === 'down' ? w.y + i : w.y)),
+    }));
+    S.words.forEach((w, wi) => w.keys.forEach((k, i) => {
+      if (!S.cells.has(k)) S.cells.set(k, { l: w.word[i], idx: [], dirs: new Set() });
+      const c = S.cells.get(k); c.idx.push(wi); c.dirs.add(w.dir);
+    }));
+    renderBoard(); renderClues(); updateScore(); setInfo();
+    S.active = true;
+    el.checkBtn.disabled = el.restartBtn.disabled = false;
+    startTimer();
+  }
+  function goHome() {
+    stopTimer(); S.active = false; S.level = 1; S.layout = null; S.words = []; S.cells = new Map();
+    el.board.style.gridTemplateColumns = ''; el.board.style.gridTemplateRows = '';
+    el.board.innerHTML = '<div class="placeholder">Clique em Novo Jogo para gerar a cruzadinha.</div>';
+    el.across.innerHTML = ''; el.down.innerHTML = '';
+    el.score.textContent = '0 de 0 palavras'; el.info.textContent = 'Escolha o nível e clique em Novo Jogo.';
+    el.checkBtn.disabled = el.restartBtn.disabled = true;
+    S.remaining = 1800; updateTimer();
+  }
+  function setInfo(msg) {
+    el.info.textContent = msg || `Nível ${S.level} · ${LEVELS[S.diff].label} · ${S.words.length} palavras`;
+  }
 
-        if (wordStarts[key]) {
-          const numLabel = document.createElement('span');
-          numLabel.className = 'number-label';
-          numLabel.textContent = wordStarts[key];
-          cellEl.appendChild(numLabel);
-          cellEl.style.position = 'relative';
+  // ---------- timer ----------
+  function startTimer() {
+    stopTimer(); updateTimer();
+    S.timer = setInterval(() => { S.remaining--; S.elapsed++; changeTime(0); }, 1000);
+  }
+  function stopTimer() { clearInterval(S.timer); S.timer = null; }
+  function changeTime(d) {
+    if (!S.active) return;
+    S.remaining = Math.max(0, S.remaining + d);
+    updateTimer();
+    if (S.remaining <= 0) gameOver();
+  }
+  function updateTimer() {
+    const m = Math.floor(S.remaining / 60), s = S.remaining % 60;
+    el.timer.textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  // ---------- renderização ----------
+  function renderBoard() {
+    const L = S.layout;
+    el.board.innerHTML = '';
+    el.board.style.gridTemplateColumns = `repeat(${L.w}, 30px)`;
+    el.board.style.gridTemplateRows = `repeat(${L.h}, 30px)`;
+    const nums = {};
+    S.words.forEach(w => { nums[K(w.x, w.y)] = w.number; });
+    for (let y = 0; y < L.h; y++) {
+      for (let x = 0; x < L.w; x++) {
+        const k = K(x, y), c = S.cells.get(k), d = document.createElement('div');
+        d.className = 'cell';
+        if (!c) { d.classList.add('empty'); el.board.appendChild(d); continue; }
+        const i = document.createElement('input');
+        i.maxLength = 1; i.autocomplete = 'off'; i.dataset.k = k;
+        i.setAttribute('aria-label', `Casa ${x + 1},${y + 1}`);
+        i.addEventListener('input', onInput);
+        i.addEventListener('keydown', onKeydown);
+        i.addEventListener('focus', onFocus);
+        i.addEventListener('click', onClickCell);
+        d.appendChild(i);
+        if (nums[k]) {
+          const n = document.createElement('span');
+          n.className = 'number-label'; n.textContent = nums[k]; d.appendChild(n);
         }
-
-        const wordIndices = cell.words.map(w => w.wordIndex);
-        const allSolved = wordIndices.length > 0 && wordIndices.every(wi => gameState.solvedWords.has(wi));
-        if (allSolved) {
-          cellEl.classList.add('correct');
-          input.disabled = true;
-        }
-      } else {
-        cellEl.classList.add('empty');
+        c.input = i; c.el = d;
+        el.board.appendChild(d);
       }
-
-      elements.crossword.appendChild(cellEl);
     }
   }
-}
-
-function renderClues() {
-  elements.cluesList.innerHTML = '';
-
-  // Lista unificada de pistas - APENAS número e texto, sem "Horizontal/Vertical"
-  gameState.words.forEach((w, wi) => {
-    const li = document.createElement('li');
-    li.className = `clue-item ${gameState.solvedWords.has(wi) ? 'completed' : ''}`;
-    li.dataset.wordIndex = wi;
-    li.innerHTML = `
-      <span class="clue-number">${w.number}.</span>
-      <span class="clue-text">${w.clue}</span>
-    `;
-    li.addEventListener('click', () => focusWord(wi));
-    elements.cluesList.appendChild(li);
-  });
-}
-
-function focusWord(wordIndex) {
-  const wordObj = gameState.words[wordIndex];
-  const { x, y, direction } = wordObj;
-  const input = document.querySelector(`#crossword .cell[data-x="${x}"][data-y="${y}"] input`);
-  if (input) input.focus();
-}
-
-// ============================================================================
-// MANIPULAÇÃO DE CELULAS
-// ============================================================================
-
-function handleCellInput(e) {
-  if (!gameState.gameActive || !gameState.timerRunning) return;
-
-  const input = e.target;
-  const value = input.value.toUpperCase();
-
-  if (value.length > 1) {
-    input.value = value[0];
+  // Pendentes em ordem crescente; resolvidas vão para o fim, com a palavra riscada em verde
+  function renderClues() {
+    el.across.innerHTML = ''; el.down.innerHTML = '';
+    S.words.map((w, wi) => ({ w, wi }))
+      .sort((a, b) => (S.solved.has(a.wi) - S.solved.has(b.wi)) || (a.w.number - b.w.number))
+      .forEach(({ w, wi }) => {
+        const done = S.solved.has(wi);
+        const li = document.createElement('li');
+        li.className = 'clue-item' + (done ? ' completed' : '');
+        li.dataset.wi = wi;
+        li.innerHTML = `<span class="clue-number">${w.number}.</span><span class="clue-text">${done ? w.word : w.clue}</span>`;
+        if (!done) li.addEventListener('click', () => {
+          S.dir = w.dir;
+          const c = S.cells.get(w.keys.find(k => !S.cells.get(k).input.disabled) || w.keys[0]);
+          if (c && !c.input.disabled) c.input.focus();
+        });
+        (w.dir === 'across' ? el.across : el.down).appendChild(li);
+      });
   }
+  function updateScore() { el.score.textContent = `${S.solved.size} de ${S.words.length} palavras`; }
 
-  if (value && /[A-Z]/.test(value)) {
-    moveFocus(input, 1);
-  }
-
-  const x = parseInt(input.dataset.x);
-  const y = parseInt(input.dataset.y);
-  checkWordsAt(x, y);
-}
-
-function handleCellKeydown(e) {
-  if (!gameState.gameActive || !gameState.timerRunning) return;
-
-  const input = e.target;
-
-  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    const inputs = Array.from(document.querySelectorAll('#crossword input'));
-    const idx = inputs.indexOf(input);
-    const step = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
-    const newIdx = idx + step;
-    if (newIdx >= 0 && newIdx < inputs.length) inputs[newIdx].focus();
-  }
-
-  if (e.key === 'Backspace' && !input.value) {
-    e.preventDefault();
-    const inputs = Array.from(document.querySelectorAll('#crossword input'));
-    const idx = inputs.indexOf(input);
-    if (idx > 0) inputs[idx - 1].focus();
-  }
-}
-
-function moveFocus(currentInput, step) {
-  const inputs = Array.from(document.querySelectorAll('#crossword input'));
-  const idx = inputs.indexOf(currentInput);
-  const newIdx = idx + step;
-  if (newIdx >= 0 && newIdx < inputs.length) {
-    inputs[newIdx].focus();
-  }
-}
-
-function checkWordsAt(x, y) {
-  gameState.words.forEach((wordObj, wi) => {
-    if (gameState.solvedWords.has(wi)) return;
-    if (gameState.wrongCheckedWords.has(wi)) return;
-
-    const { word, x: wx, y: wy, direction } = wordObj;
-    let charIndex = -1;
-
-    if (direction === 'across' && y === wy && x >= wx && x < wx + word.length) {
-      charIndex = x - wx;
-    } else if (direction === 'down' && x === wx && y >= wy && y < wy + word.length) {
-      charIndex = y - wy;
+  // ---------- entrada do jogador ----------
+  function dirOf(c) { return c.dirs.has(S.dir) ? S.dir : [...c.dirs][0]; }
+  function move(k, step) {
+    const c = S.cells.get(k), d = dirOf(c);
+    let [x, y] = k.split(',').map(Number);
+    for (let n = 0; n < 20; n++) {
+      x += d === 'across' ? step : 0; y += d === 'down' ? step : 0;
+      const t = S.cells.get(K(x, y));
+      if (!t) return;
+      if (!t.input.disabled) { t.input.focus(); return; }
     }
+  }
+  function onInput(e) {
+    if (!S.active) return;
+    const k = e.target.dataset.k;
+    const v = e.target.value.normalize('NFD').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 1);
+    e.target.value = v;
+    S.cells.get(k).idx.forEach(checkWord);
+    if (v) move(k, 1);
+  }
+  function onKeydown(e) {
+    const k = e.target.dataset.k;
+    const arrows = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
+    if (arrows[e.key]) {
+      e.preventDefault();
+      const [dx, dy] = arrows[e.key], [x, y] = k.split(',').map(Number);
+      const t = S.cells.get(K(x + dx, y + dy));
+      S.dir = dx ? 'across' : 'down';
+      if (t && !t.input.disabled) t.input.focus();
+    } else if (e.key === 'Backspace' && !e.target.value) {
+      e.preventDefault(); move(k, -1);
+    }
+  }
+  function onFocus(e) {
+    e.target.select();
+    document.querySelectorAll('#crossword .cell.active').forEach(c => c.classList.remove('active'));
+    const c = S.cells.get(e.target.dataset.k);
+    c.el.classList.add('active');
+    if (c.dirs.size === 1) S.dir = [...c.dirs][0];
+  }
+  function onClickCell(e) {
+    const c = S.cells.get(e.target.dataset.k);
+    if (c.dirs.size > 1 && document.activeElement === e.target && e.detail > 0 && e.target.dataset.clicked === '1') {
+      S.dir = S.dir === 'across' ? 'down' : 'across';
+    }
+    e.target.dataset.clicked = '1';
+  }
 
-    if (charIndex === -1) return;
+  // ---------- verificação ----------
+  function readWord(w) { return w.keys.map(k => S.cells.get(k).input.value).join('').toUpperCase(); }
 
-    const isComplete = word.split('').every((letter, i) => {
-      const cx = direction === 'across' ? wx + i : wx;
-      const cy = direction === 'down' ? wy + i : wy;
-      const cellInput = document.querySelector(`#crossword .cell[data-x="${cx}"][data-y="${cy}"] input`);
-      return cellInput && cellInput.value.toUpperCase() === letter;
+  // Confere automaticamente quando a palavra é totalmente preenchida
+  function checkWord(wi, silent) {
+    if (!S.active || S.solved.has(wi)) return;
+    const w = S.words[wi], s = readWord(w);
+    if (s.length < w.word.length) { S.lastWrong[wi] = null; return; }
+    if (s === w.word) { solve(wi); return; }
+    flash(wi);
+    if (!silent && S.lastWrong[wi] !== s) { S.lastWrong[wi] = s; changeTime(-5); }
+  }
+  function solve(wi) {
+    S.solved.add(wi);
+    S.words[wi].keys.forEach(k => {
+      const c = S.cells.get(k);
+      c.el.classList.remove('wrong'); c.el.classList.add('correct'); c.input.disabled = true;
     });
-
-    if (isComplete) {
-      const userWord = word.split('').map((letter, i) => {
-        const cx = direction === 'across' ? wx + i : wx;
-        const cy = direction === 'down' ? wy + i : wy;
-        const cellInput = document.querySelector(`#crossword .cell[data-x="${cx}"][data-y="${cy}"] input`);
-        return cellInput ? cellInput.value.toUpperCase() : '';
-      }).join('');
-
-      if (userWord === word) {
-        markWordCorrect(wi);
-      } else {
-        markWordWrong(wi);
-      }
-    }
-  });
-}
-
-function markWordCorrect(wordIndex) {
-  if (gameState.solvedWords.has(wordIndex)) return;
-
-  gameState.solvedWords.add(wordIndex);
-  gameState.wrongCheckedWords.delete(wordIndex);
-  addTime(5);
-  updateScoreDisplay();
-
-  const wordObj = gameState.words[wordIndex];
-  const { word, x, y, direction } = wordObj;
-
-  word.split('').forEach((letter, i) => {
-    const cx = direction === 'across' ? x + i : x;
-    const cy = direction === 'down' ? y + i : y;
-    const cellEl = document.querySelector(`#crossword .cell[data-x="${cx}"][data-y="${cy}"]`);
-    const input = cellEl.querySelector('input');
-    if (cellEl) {
-      cellEl.classList.add('correct');
-      cellEl.classList.remove('wrong');
-    }
-    if (input) input.disabled = true;
-  });
-
-  updateClueStyle(wordIndex, true);
-  checkLevelComplete();
-}
-
-function markWordWrong(wordIndex) {
-  if (gameState.wrongCheckedWords.has(wordIndex)) return;
-
-  gameState.wrongCheckedWords.add(wordIndex);
-
-  const wordObj = gameState.words[wordIndex];
-  const { word, x, y, direction } = wordObj;
-
-  word.split('').forEach((letter, i) => {
-    const cx = direction === 'across' ? x + i : x;
-    const cy = direction === 'down' ? y + i : y;
-    const cellEl = document.querySelector(`#crossword .cell[data-x="${cx}"][data-y="${cy}"]`);
-    if (cellEl) {
-      cellEl.classList.add('wrong');
-      setTimeout(() => cellEl.classList.remove('wrong'), 600);
-    }
-  });
-
-  removeTime(5);
-  updateClueStyle(wordIndex, false);
-}
-
-function updateClueStyle(wordIndex, completed) {
-  const items = document.querySelectorAll('.clue-item');
-  items.forEach(item => {
-    if (parseInt(item.dataset.wordIndex) === wordIndex) {
-      if (completed) {
-        item.classList.add('completed');
-      } else {
-        item.classList.remove('completed');
-      }
-    }
-  });
-}
-
-function updateScoreDisplay() {
-  const solved = gameState.solvedWords.size;
-  const total = gameState.totalWords;
-  elements.scoreDisplay.textContent = `${solved} de ${total}`;
-}
-
-function checkLevelComplete() {
-  if (gameState.solvedWords.size >= gameState.totalWords) {
-    stopTimer();
-    showLevelComplete();
+    renderClues();
+    updateScore();
+    changeTime(5);
+    if (S.solved.size === S.words.length) finishLevel();
   }
+  function flash(wi) {
+    S.words[wi].keys.forEach(k => {
+      const c = S.cells.get(k);
+      if (c.el.classList.contains('correct')) return;
+      c.el.classList.remove('wrong'); void c.el.offsetWidth; c.el.classList.add('wrong');
+      setTimeout(() => c.el.classList.remove('wrong'), 700);
+    });
+  }
+  // Botão Conferir: mostra certas e erradas, sem penalidade de tempo
+  function checkAll() {
+    if (!S.active) return;
+    let ok = 0, bad = 0;
+    S.words.forEach((w, wi) => {
+      if (S.solved.has(wi)) { ok++; return; }
+      if (readWord(w).length === w.word.length) { bad++; checkWord(wi, true); if (S.solved.has(wi)) { ok++; bad--; } }
+      const li = document.querySelector(`.clue-item[data-wi="${wi}"]`);
+      li.classList.toggle('wrong-clue', readWord(w).length === w.word.length && !S.solved.has(wi));
+    });
+    setInfo(`Conferido: ${ok} certas, ${bad} erradas.`);
+    setTimeout(() => S.active && setInfo(), 3000);
+  }
+
+  // ---------- fim de nível / game over ----------
+  function finishLevel() {
+    stopTimer(); S.active = false;
+    const m = Math.floor(S.elapsed / 60), s = S.elapsed % 60;
+    el.lcStats.innerHTML = `
+      <p><strong>Nível:</strong> ${S.level} (${LEVELS[S.diff].label})</p>
+      <p><strong>Tempo gasto:</strong> ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}</p>
+      <p><strong>Palavras:</strong> ${S.words.length} de ${S.words.length}</p>`;
+    el.lcPopup.classList.remove('hidden');
+  }
+  function gameOver() {
+    stopTimer(); S.active = false;
+    document.querySelectorAll('#crossword input').forEach(i => { i.disabled = true; });
+    el.goMsg.textContent = `O tempo esgotou no nível ${S.level} (${LEVELS[S.diff].label})! Você acertou ${S.solved.size} de ${S.words.length} palavras.`;
+    el.goPopup.classList.remove('hidden');
+  }
+
+  // ---------- eventos ----------
+  el.newBtn.addEventListener('click', startNewGame);
+  el.checkBtn.addEventListener('click', checkAll);
+  el.restartBtn.addEventListener('click', () => { if (S.layout) loadLayout(); });
+  el.goRetry.addEventListener('click', () => { el.goPopup.classList.add('hidden'); loadLayout(); });
+  el.goHome.addEventListener('click', () => { el.goPopup.classList.add('hidden'); goHome(); });
+  el.lcNext.addEventListener('click', () => {
+    el.lcPopup.classList.add('hidden');
+    S.level++;
+    S.diff = ORDER[Math.min(ORDER.indexOf(S.diff) + 1, 2)];
+    newLayout();
+  });
+  goHome();
 }
-
-// ============================================================================
-// POPUPS
-// ============================================================================
-
-function showGameOver() {
-  const diff = DIFFICULTY_LABELS[gameState.currentDifficulty];
-  elements.gameoverMessage.textContent = `O tempo esgotou no nível ${gameState.levelNumber} (${diff.label})! A cruzadinha não foi finalizada.`;
-  elements.gameoverPopup.classList.remove('hidden');
-}
-
-function showLevelComplete() {
-  const diff = DIFFICULTY_LABELS[gameState.currentDifficulty];
-  const timeTaken = 1800 - gameState.timerSeconds;
-  const m = Math.floor(timeTaken / 60);
-  const s = timeTaken % 60;
-
-  elements.levelcompleteMessage.textContent = `Parabéns! Você completou o nível ${gameState.levelNumber}.`;
-  elements.levelcompleteStats.innerHTML = `
-    <p><strong>Nível:</strong> ${gameState.levelNumber} (${diff.label})</p>
-    <p><strong>Tempo gasto:</strong> ${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}</p>
-    <p><strong>Palavras:</strong> ${gameState.solvedWords.size} de ${gameState.totalWords}</p>
-  `;
-  elements.levelcompletePopup.classList.remove('hidden');
-}
-
-function closePopup(popup) {
-  popup.classList.add('hidden');
-}
-
-// ============================================================================
-// INICIALIZAR
-// ============================================================================
-
-init();
