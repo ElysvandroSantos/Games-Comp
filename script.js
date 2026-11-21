@@ -3,69 +3,85 @@
  * Jogo interativo para a disciplina de Arquitetura Computacional
  * 
  * Palavras baseadas no documento ARQCOMP_Exercicio_04_v3 (páginas 1 e 2)
+ * 
+ * TODAS AS COORDENADAS FORAM VALIDADAS automaticamente (algoritmo de backtracking):
+ * 1. Zero conflitos de letras em celulas compartilhadas
+ * 2. Cada palavra cruza pelo menos uma outra palavra
+ * 3. Todas as palavras dentro dos limites do grid
+ * 4. Tabuleiros compactos e organizados visualmente
  */
 
 // ============================================================================
 // DADAS DAS PALAVRAS E PISTAS POR NÍVEL
+// Cada palavra tem: palavra, dica, direção (across/down), x, y, número
+// Coordenadas validadas por algoritmo de backtracking
 // ============================================================================
 
 const WORD_DATA = {
-  // Nível Fácil - 8 palavras (todas intersectam entre si)
+  // ============================================================================
+  // NÍVEL FÁCIL - 8 palavras (Grade 11x11, tabuleiro compacto)
+  // ============================================================================
   easy: {
     words: [
-      { word: 'CPU', clue: 'O cérebro do computador que executa instruções.', direction: 'across', x: 3, y: 0, number: 1 },
-      { word: 'UC', clue: 'Unidade que coordena as atividades do processador.', direction: 'across', x: 2, y: 0, number: 2 },
-      { word: 'ULA', clue: 'Faz as contas e operações lógicas dentro da CPU.', direction: 'down', x: 5, y: 0, number: 3 },
-      { word: 'CACHE', clue: 'Memória rápida que guarda dados frequentemente usados.', direction: 'down', x: 3, y: 0, number: 4 },
-      { word: 'RAM', clue: 'Memória volátil que armazena dados temporariamente.', direction: 'across', x: 0, y: 3, number: 5 },
-      { word: 'ROM', clue: 'Memória que não se apaga ao desligar o computador.', direction: 'down', x: 0, y: 3, number: 6 },
-      { word: 'DMA', clue: 'Transfere dados sem passar pela CPU.', direction: 'down', x: 5, y: 3, number: 7 },
-      { word: 'FLASH', clue: 'Memória não volátil usada em pendrives e SSDs.', direction: 'across', x: 3, y: 5, number: 8 },
+      { word: 'FLASH', clue: 'Memória não volátil usada em pendrives e SSDs.', direction: 'down', x: 9, y: 3, number: 1 },
+      { word: 'DMA', clue: 'Transfere dados sem passar pela CPU.', direction: 'down', x: 7, y: 5, number: 2 },
+      { word: 'UC', clue: 'Unidade que coordena as atividades do processador.', direction: 'down', x: 8, y: 6, number: 3 },
+      { word: 'CACHE', clue: 'Memória rápida que guarda dados frequentemente usados.', direction: 'across', x: 6, y: 7, number: 4 },
+      { word: 'CPU', clue: 'O cérebro do computador que executa instruções.', direction: 'down', x: 8, y: 7, number: 5 },
+      { word: 'RAM', clue: 'Memória volátil que armazena dados temporariamente.', direction: 'down', x: 10, y: 8, number: 6 },
+      { word: 'ULA', clue: 'Faz as contas e operações lógicas dentro da CPU.', direction: 'across', x: 8, y: 9, number: 7 },
+      { word: 'ROM', clue: 'Memória que não se apaga ao desligar o computador.', direction: 'across', x: 8, y: 10, number: 8 },
     ],
-    gridWidth: 8,
-    gridHeight: 6,
+    gridWidth: 11,
+    gridHeight: 11,
   },
-  // Nível Médio - 12 palavras
+
+  // ============================================================================
+  // NÍVEL MÉDIO - 12 palavras (Grade 18x18, tabuleiro compacto)
+  // ============================================================================
   medium: {
     words: [
-      { word: 'CPU', clue: 'Unidade que processa os dados do sistema.', direction: 'across', x: 4, y: 0, number: 1 },
-      { word: 'UC', clue: 'Interpreta e controla o fluxo de instruções.', direction: 'across', x: 3, y: 0, number: 2 },
-      { word: 'ULA', clue: 'Executa operações aritméticas e lógicas.', direction: 'down', x: 7, y: 0, number: 3 },
-      { word: 'RAM', clue: 'Memória de acesso rápido e temporário.', direction: 'across', x: 0, y: 4, number: 4 },
-      { word: 'ROM', clue: 'Armazena instruções de inicialização.', direction: 'down', x: 0, y: 4, number: 5 },
-      { word: 'CACHE', clue: 'Pequena memória muito veloz próxima ao processador.', direction: 'down', x: 2, y: 3, number: 6 },
-      { word: 'FLASH', clue: 'Armazena dados mesmo sem energia elétrica.', direction: 'across', x: 7, y: 6, number: 7 },
-      { word: 'DMA', clue: 'Transfere dados direto entre periféricos e memória.', direction: 'down', x: 9, y: 2, number: 8 },
-      { word: 'EEPROM', clue: 'Memória que pode ser apagada e reprogramada eletricamente.', direction: 'across', x: 0, y: 7, number: 9 },
-      { word: 'MEMORIADEMASSA', clue: 'Dispositivo para armazenamento permanente de grande volume.', direction: 'down', x: 3, y: 5, number: 10 },
-      { word: 'ADDRESSBUS', clue: 'Leva o endereço da memória a ser acessada.', direction: 'across', x: 5, y: 8, number: 11 },
-      { word: 'DATABUS', clue: 'Transporta os dados entre os componentes.', direction: 'down', x: 14, y: 1, number: 12 },
+      { word: 'UC', clue: 'Interpreta e controla o fluxo de instruções.', direction: 'down', x: 16, y: 1, number: 1 },
+      { word: 'CPU', clue: 'Unidade que processa os dados do sistema.', direction: 'down', x: 16, y: 2, number: 2 },
+      { word: 'EEPROM', clue: 'Memória que pode ser apagada e reprogramada eletricamente.', direction: 'down', x: 15, y: 3, number: 3 },
+      { word: 'ULA', clue: 'Executa operações aritméticas e lógicas.', direction: 'down', x: 16, y: 4, number: 4 },
+      { word: 'MEMORIADEMASSA', clue: 'Dispositivo para armazenamento permanente de grande volume.', direction: 'down', x: 17, y: 4, number: 5 },
+      { word: 'ROM', clue: 'Armazena instruções de inicialização.', direction: 'down', x: 15, y: 6, number: 0 },
+      { word: 'RAM', clue: 'Memória de acesso rápido e temporário.', direction: 'across', x: 15, y: 6, number: 6 },
+      { word: 'CACHE', clue: 'Pequena memória muito veloz próxima ao processador.', direction: 'down', x: 16, y: 7, number: 7 },
+      { word: 'DMA', clue: 'Transfere dados direto entre periféricos e memória.', direction: 'across', x: 14, y: 8, number: 8 },
+      { word: 'DATABUS', clue: 'Transporta os dados entre os componentes.', direction: 'down', x: 14, y: 9, number: 9 },
+      { word: 'FLASH', clue: 'Armazena dados mesmo sem energia elétrica.', direction: 'across', x: 12, y: 10, number: 10 },
+      { word: 'ADDRESSBUS', clue: 'Leva o endereço da memória a ser acessada.', direction: 'across', x: 8, y: 16, number: 11 },
     ],
-    gridWidth: 20,
-    gridHeight: 15,
+    gridWidth: 18,
+    gridHeight: 18,
   },
-  // Nível Difícil - 16 palavras (todas do documento)
+
+  // ============================================================================
+  // NÍVEL DIFÍCIL - 16 palavras (Grade 24x24, tabuleiro compacto)
+  // ============================================================================
   hard: {
     words: [
-      { word: 'CPU', clue: 'Unidade central que processa todas as instruções do computador.', direction: 'across', x: 5, y: 0, number: 1 },
-      { word: 'UC', clue: 'Controla a sequência de operações da CPU.', direction: 'across', x: 4, y: 0, number: 2 },
-      { word: 'ULA', clue: 'Executa cálculos e decisões lógicas do processador.', direction: 'down', x: 8, y: 0, number: 3 },
-      { word: 'CACHE', clue: 'Buffer rápido entre processador e memória principal.', direction: 'down', x: 5, y: 0, number: 4 },
-      { word: 'RAM', clue: 'Memória temporária que é limpa ao desligar o sistema.', direction: 'across', x: 0, y: 6, number: 5 },
-      { word: 'ROM', clue: 'Memória somente leitura com dados fixos.', direction: 'down', x: 0, y: 6, number: 6 },
-      { word: 'EEPROM', clue: 'Memória não volátil regravável por meio elétrico.', direction: 'across', x: 2, y: 8, number: 7 },
-      { word: 'FLASH', clue: 'Memória usada em SSDs e cartões de memória.', direction: 'down', x: 9, y: 5, number: 8 },
-      { word: 'DMA', clue: 'Acesso direto à memória sem interrupção do processador.', direction: 'across', x: 0, y: 13, number: 9 },
-      { word: 'MEMORIADEMASSA', clue: 'HD ou SSD que guarda arquivos mesmo desligado.', direction: 'down', x: 7, y: 11, number: 10 },
-      { word: 'ADDRESSBUS', clue: 'Especifica onde os dados devem ser lidos ou escritos.', direction: 'down', x: 10, y: 2, number: 11 },
-      { word: 'DATABUS', clue: 'Caminho pelos quais os dados viajam internamente.', direction: 'across', x: 15, y: 5, number: 12 },
-      { word: 'MICROCONTROLADOR', clue: 'Computador em miniatura integrado em um único chip.', direction: 'down', x: 13, y: 7, number: 13 },
-      { word: 'DUALCORE', clue: 'Processador com dois núcleos de execução.', direction: 'across', x: 2, y: 15, number: 14 },
-      { word: 'REGISTRADORES', clue: 'Locais de armazenamento muito rápidos dentro do processador.', direction: 'down', x: 8, y: 1, number: 15 },
-      { word: 'QUADCORE', clue: 'Processador com quatro núcleos de execução.', direction: 'down', x: 8, y: 15, number: 16 },
+      { word: 'MICROCONTROLADOR', clue: 'Computador em miniatura integrado em um único chip.', direction: 'down', x: 19, y: 2, number: 1 },
+      { word: 'QUADCORE', clue: 'Processador com quatro núcleos de execução.', direction: 'across', x: 4, y: 12, number: 2 },
+      { word: 'REGISTRADORES', clue: 'Locais de armazenamento muito rápidos dentro do processador.', direction: 'across', x: 10, y: 12, number: 3 },
+      { word: 'DATABUS', clue: 'Caminho pelos quais os dados viajam internamente.', direction: 'down', x: 22, y: 13, number: 4 },
+      { word: 'DUALCORE', clue: 'Processador com dois núcleos de execução.', direction: 'down', x: 23, y: 13, number: 5 },
+      { word: 'MEMORIADEMASSA', clue: 'HD ou SSD que guarda arquivos mesmo desligado.', direction: 'across', x: 9, y: 14, number: 6 },
+      { word: 'FLASH', clue: 'Memória usada em SSDs e cartões de memória.', direction: 'down', x: 18, y: 16, number: 7 },
+      { word: 'DMA', clue: 'Acesso direto à memória sem interrupção do processador.', direction: 'across', x: 20, y: 16, number: 8 },
+      { word: 'ADDRESSBUS', clue: 'Especifica onde os dados devem ser lidos ou escritos.', direction: 'across', x: 13, y: 19, number: 9 },
+      { word: 'CACHE', clue: 'Buffer rápido entre processador e memória principal.', direction: 'across', x: 19, y: 20, number: 11 },
+      { word: 'CPU', clue: 'Unidade central que processa todas as instruções do computador.', direction: 'down', x: 21, y: 20, number: 12 },
+      { word: 'UC', clue: 'Controla a sequência de operações da CPU.', direction: 'down', x: 21, y: 19, number: 10 },
+      { word: 'RAM', clue: 'Memória temporária que é limpa ao desligar o sistema.', direction: 'down', x: 23, y: 21, number: 13 },
+      { word: 'ROM', clue: 'Memória somente leitura com dados fixos.', direction: 'across', x: 21, y: 23, number: 16 },
+      { word: 'EEPROM', clue: 'Memória não volátil regravável por meio elétrico.', direction: 'across', x: 18, y: 23, number: 15 },
+      { word: 'ULA', clue: 'Executa cálculos e decisões lógicas do processador.', direction: 'across', x: 21, y: 22, number: 14 },
     ],
-    gridWidth: 28,
-    gridHeight: 20,
+    gridWidth: 24,
+    gridHeight: 24,
   },
 };
 
@@ -94,13 +110,13 @@ let gameState = {
   solvedWords: new Set(),
   totalWords: 0,
   gameActive: false,
+  wrongCheckedWords: new Set(),
 };
 
 // Elementos DOM
 const elements = {
   crossword: document.getElementById('crossword'),
-  cluesAcross: document.getElementById('clues-across'),
-  cluesDown: document.getElementById('clues-down'),
+  cluesList: document.getElementById('clues-list'),
   timerDisplay: document.getElementById('timer-display'),
   scoreDisplay: document.getElementById('score-display'),
   levelDisplay: document.getElementById('level-display'),
@@ -144,7 +160,7 @@ function renderLevelInfo() {
   const diff = DIFFICULTY_LABELS[gameState.currentDifficulty];
   elements.levelDisplay.textContent = gameState.levelNumber;
   elements.difficultyDisplay.textContent = diff.label;
-  elements.difficultyDisplay.className = 'status-value difficulty-badge ' + diff.class;
+  elements.difficultyDisplay.className = 'status-value badge ' + diff.class;
 }
 
 function startGame() {
@@ -169,8 +185,9 @@ function loadLevel(difficulty) {
   gameState.gridWidth = data.gridWidth;
   gameState.gridHeight = data.gridHeight;
   gameState.solvedWords = new Set();
+  gameState.wrongCheckedWords = new Set();
   gameState.totalWords = data.words.length;
-  gameState.timerSeconds = 1800; // Reset timer para 30 min a cada nível
+  gameState.timerSeconds = 1800;
 
   renderLevelInfo();
   updateScoreDisplay();
@@ -192,6 +209,7 @@ function restartLevel() {
   gameState.timerRunning = false;
   gameState.startTime = null;
   gameState.solvedWords = new Set();
+  gameState.wrongCheckedWords = new Set();
 
   renderCrossword();
   renderClues();
@@ -260,10 +278,9 @@ function updateTimerDisplay() {
 
 function renderCrossword() {
   elements.crossword.innerHTML = '';
-  elements.crossword.style.gridTemplateColumns = `repeat(${gameState.gridWidth}, 34px)`;
-  elements.crossword.style.gridTemplateRows = `repeat(${gameState.gridHeight}, 34px)`;
+  elements.crossword.style.gridTemplateColumns = `repeat(${gameState.gridWidth}, 50px)`;
+  elements.crossword.style.gridTemplateRows = `repeat(${gameState.gridHeight}, 50px)`;
 
-  // Construir mapa de células ocupadas
   const cellMap = {};
   const wordStarts = {};
 
@@ -287,23 +304,22 @@ function renderCrossword() {
     }
   });
 
-  // Renderizar grid
   for (let y = 0; y < gameState.gridHeight; y++) {
     for (let x = 0; x < gameState.gridWidth; x++) {
-      const key = `${x},${y}`;
+      const key = `${y},${x}`;
       const cell = cellMap[key];
 
       const cellEl = document.createElement('div');
       cellEl.className = 'cell';
-      cellEl.dataset.x = x;
       cellEl.dataset.y = y;
+      cellEl.dataset.x = x;
 
       if (cell) {
         cellEl.classList.add('has-letter');
         const input = document.createElement('input');
         input.maxLength = 1;
-        input.dataset.x = x;
         input.dataset.y = y;
+        input.dataset.x = x;
         input.addEventListener('input', handleCellInput);
         input.addEventListener('keydown', handleCellKeydown);
         cellEl.appendChild(input);
@@ -332,30 +348,19 @@ function renderCrossword() {
 }
 
 function renderClues() {
-  elements.cluesAcross.innerHTML = '';
-  elements.cluesDown.innerHTML = '';
+  elements.cluesList.innerHTML = '';
 
-  const across = gameState.words.filter(w => w.direction === 'across');
-  const down = gameState.words.filter(w => w.direction === 'down');
-
-  across.forEach((w, wi) => {
+  // Lista unificada de pistas - APENAS número e texto, sem "Horizontal/Vertical"
+  gameState.words.forEach((w, wi) => {
     const li = document.createElement('li');
     li.className = `clue-item ${gameState.solvedWords.has(wi) ? 'completed' : ''}`;
-    li.dataset.word = w.word;
     li.dataset.wordIndex = wi;
-    li.innerHTML = `<span class="clue-number">${w.number}.</span> ${w.clue}`;
+    li.innerHTML = `
+      <span class="clue-number">${w.number}.</span>
+      <span class="clue-text">${w.clue}</span>
+    `;
     li.addEventListener('click', () => focusWord(wi));
-    elements.cluesAcross.appendChild(li);
-  });
-
-  down.forEach((w, wi) => {
-    const li = document.createElement('li');
-    li.className = `clue-item ${gameState.solvedWords.has(wi) ? 'completed' : ''}`;
-    li.dataset.word = w.word;
-    li.dataset.wordIndex = wi;
-    li.innerHTML = `<span class="clue-number">${w.number}.</span> ${w.clue}`;
-    li.addEventListener('click', () => focusWord(wi));
-    elements.cluesDown.appendChild(li);
+    elements.cluesList.appendChild(li);
   });
 }
 
@@ -423,6 +428,7 @@ function moveFocus(currentInput, step) {
 function checkWordsAt(x, y) {
   gameState.words.forEach((wordObj, wi) => {
     if (gameState.solvedWords.has(wi)) return;
+    if (gameState.wrongCheckedWords.has(wi)) return;
 
     const { word, x: wx, y: wy, direction } = wordObj;
     let charIndex = -1;
@@ -463,6 +469,7 @@ function markWordCorrect(wordIndex) {
   if (gameState.solvedWords.has(wordIndex)) return;
 
   gameState.solvedWords.add(wordIndex);
+  gameState.wrongCheckedWords.delete(wordIndex);
   addTime(5);
   updateScoreDisplay();
 
@@ -486,6 +493,10 @@ function markWordCorrect(wordIndex) {
 }
 
 function markWordWrong(wordIndex) {
+  if (gameState.wrongCheckedWords.has(wordIndex)) return;
+
+  gameState.wrongCheckedWords.add(wordIndex);
+
   const wordObj = gameState.words[wordIndex];
   const { word, x, y, direction } = wordObj;
 

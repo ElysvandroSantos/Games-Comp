@@ -8,24 +8,30 @@
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="hero">
+      <div class="circuit-decoration"></div>
       <h1>Cruzadinha de Arquitetura Computacional</h1>
-      <div class="status-bar">
-        <div class="status-item">
-          <span class="status-label">Nível</span>
-          <span id="level-display" class="status-value">1</span>
-          <span id="difficulty-display" class="status-value difficulty-badge">Fácil</span>
-        </div>
-        <div class="status-item">
-          <span class="status-label">Tempo</span>
-          <span id="timer-display" class="status-value">30:00</span>
-        </div>
-        <div class="status-item">
-          <span class="status-label">Acertos</span>
-          <span id="score-display" class="status-value">0 de 8</span>
-        </div>
-      </div>
+      <p class="subtitle">Teste seus conhecimentos sobre termos de hardware e arquitetura de computadores</p>
     </header>
+
+    <div class="status-bar">
+      <div class="status-card">
+        <span class="status-label">Nível</span>
+        <span id="level-display" class="status-value">1</span>
+      </div>
+      <div class="status-card">
+        <span class="status-label">Dificuldade</span>
+        <span id="difficulty-display" class="status-value badge">Fácil</span>
+      </div>
+      <div class="status-card">
+        <span class="status-label">Tempo</span>
+        <span id="timer-display" class="status-value">30:00</span>
+      </div>
+      <div class="status-card">
+        <span class="status-label">Acertos</span>
+        <span id="score-display" class="status-value">0 de 8</span>
+      </div>
+    </div>
 
     <div class="game-area">
       <div class="controls">
@@ -38,14 +44,8 @@
       </div>
 
       <div class="clues-panel">
-        <div class="clue-group">
-          <h3>Horizontais</h3>
-          <ul id="clues-across" class="clue-list"></ul>
-        </div>
-        <div class="clue-group">
-          <h3>Verticais</h3>
-          <ul id="clues-down" class="clue-list"></ul>
-        </div>
+        <h3>Pistas</h3>
+        <ul id="clues-list" class="clue-list"></ul>
       </div>
     </div>
   </div>
@@ -54,7 +54,7 @@
   <div id="gameover-popup" class="popup hidden">
     <div class="popup-content">
       <h2>Game Over</h2>
-      <p id="gameover-message">O tempo esgotou! A cruzadinha não foi finalizada.</p>
+      <p id="gameover-message">O tempo esgotou!</p>
       <button id="gameover-retry" class="btn btn-primary">Tentar novamente este nível</button>
     </div>
   </div>
@@ -63,12 +63,11 @@
   <div id="levelcomplete-popup" class="popup hidden">
     <div class="popup-content">
       <h2>Nível Concluído!</h2>
-      <p id="levelcomplete-message">Parabéns! Você completou o nível.</p>
       <div id="levelcomplete-stats" class="stats"></div>
       <button id="levelcomplete-next" class="btn btn-primary">Próximo Nível</button>
     </div>
   </div>
 
   <script src="script.js"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5d928a53e7f1d0b',t:'MTc5NTE5NTU3Nw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5d928a53e7f1d0b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
