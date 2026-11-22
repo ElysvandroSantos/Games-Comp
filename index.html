@@ -1,78 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cruzadinha de Arquitetura Computacional</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0c">
+    <title>Desafios de Arquitetura Computacional</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div class="container">
-    <header class="hero">
-      <div class="circuit-decoration"></div>
-      <h1>Cruzadinha de Arquitetura Computacional</h1>
-    </header>
-
-    <div class="toolbar">
-      <div class="level-select">
-        <label for="level">Nível:</label>
-        <select id="level">
-          <option value="random">Aleatório</option>
-          <option value="easy">Fácil (12 palavras)</option>
-          <option value="medium">Médio (14 palavras)</option>
-          <option value="hard">Difícil (16 palavras)</option>
-        </select>
-      </div>
-      <button id="new-game-btn" class="btn btn-primary">Novo Jogo</button>
-    </div>
-
-    <div class="status-bar">
-      <span id="words-count" class="level-info">Escolha o nível e clique em Novo Jogo.</span>
-      <span class="timer-box">
-        <span class="timer-label">Tempo restante:</span>
-        <span id="timer-display" class="timer-value">30:00</span>
-      </span>
-    </div>
-
-    <div class="game-area">
-      <div class="crossword-wrapper">
-        <div class="board-scroll"><div id="crossword" class="crossword"></div></div>
-        <div class="bottom-controls">
-          <div class="score-counter"><span id="score-display">0 de 0 palavras</span></div>
-          <div class="action-buttons">
-            <button id="check-btn" class="btn btn-secondary" disabled>Conferir</button>
-            <button id="restart-btn" class="btn btn-secondary" disabled>Reiniciar</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="clues-panel">
-        <div class="clue-group"><h3>Horizontais</h3><ul id="clues-across" class="clue-list"></ul></div>
-        <div class="clue-group"><h3>Verticais</h3><ul id="clues-down" class="clue-list"></ul></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div id="gameover-popup" class="popup hidden">
-    <div class="popup-content">
-      <h2>Game Over</h2>
-      <p id="gameover-message">O tempo esgotou! A cruzadinha não foi finalizada.</p>
-      <div class="popup-buttons">
-        <button id="gameover-retry" class="btn btn-primary">Tentar este nível de novo</button>
-        <button id="gameover-home" class="btn btn-secondary">Voltar ao início</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="levelcomplete-popup" class="popup hidden">
-    <div class="popup-content">
-      <h2>Nível concluído!</h2>
-      <div id="levelcomplete-stats" class="stats"></div>
-      <button id="levelcomplete-next" class="btn btn-primary">Próximo nível</button>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+    <main class="container home-container">
+        <header class="hero">
+            <div class="circuit-decoration"></div>
+            <p class="eyebrow">CENTRAL DE DESAFIOS</p>
+            <h1>Arquitetura Computacional</h1>
+            <p class="hero-subtitle">Escolha seu desafio e teste seus conhecimentos.</p>
+        </header>
+        <section class="game-selection" aria-label="Escolha um jogo">
+            <a class="game-card crossword-card" href="crossword.html">
+                <div class="game-icon" aria-hidden="true">▦</div><span class="card-kicker">DESAFIO 01</span>
+                <h2>Cruzadinha</h2>
+                <p>Descubra os conceitos de arquitetura computacional usando as pistas horizontais e verticais.</p><span
+                    class="card-action">JOGAR AGORA <span>→</span></span>
+            </a>
+            <a class="game-card wordsearch-card" href="wordsearch.html">
+                <div class="game-icon" aria-hidden="true">⌕</div><span class="card-kicker">DESAFIO 02</span>
+                <h2>Caça-palavras</h2>
+                <p>Encontre os termos escondidos na grade. As palavras podem aparecer em diferentes direções.</p><span
+                    class="card-action">JOGAR AGORA <span>→</span></span>
+            </a>
+        </section>
+        <footer class="home-footer">16 CONCEITOS · 4 MODOS DE JOGO · 30 MINUTOS</footer>
+    </main>
 </body>
+
 </html>
