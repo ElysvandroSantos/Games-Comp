@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cruzadinha | Arquitetura Computacional</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <nav class="game-nav" aria-label="Navegação dos jogos"><a class="nav-brand" href="index.html">← Início</a><div class="nav-games"><a class="nav-link active" href="crossword.html">Cruzadinha</a><a class="nav-link" href="wordsearch.html">Caça-palavras</a></div></nav>
+    <header class="hero"><div class="circuit-decoration"></div><p class="eyebrow">DESAFIO 01</p><h1>Cruzadinha de Arquitetura Computacional</h1></header>
+
+    <div class="toolbar">
+      <div class="level-select">
+        <label for="level">Nível:</label>
+        <select id="level">
+          <option value="random">Aleatório</option>
+          <option value="easy">Fácil (12 palavras)</option>
+          <option value="medium">Médio (14 palavras)</option>
+          <option value="hard">Difícil (16 palavras)</option>
+        </select>
+      </div>
+      <button id="new-game-btn" class="btn btn-primary">Novo Jogo</button>
+    </div>
+
+    <div class="status-bar">
+      <span id="words-count" class="level-info">Escolha o nível e clique em Novo Jogo.</span>
+      <span class="timer-box">
+        <span class="timer-label">Tempo restante:</span>
+        <span id="timer-display" class="timer-value">30:00</span>
+      </span>
+    </div>
+
+    <div class="game-area">
+      <div class="crossword-wrapper">
+        <div class="board-scroll"><div id="crossword" class="crossword"></div></div>
+        <div class="bottom-controls">
+          <div class="score-counter"><span id="score-display">0 de 0 palavras</span></div>
+          <div class="action-buttons">
+            <button id="check-btn" class="btn btn-secondary" disabled>Conferir</button>
+            <button id="restart-btn" class="btn btn-secondary" disabled>Reiniciar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="clues-panel">
+        <div class="clue-group"><h3>Horizontais</h3><ul id="clues-across" class="clue-list"></ul></div>
+        <div class="clue-group"><h3>Verticais</h3><ul id="clues-down" class="clue-list"></ul></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="gameover-popup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Game Over</h2>
+      <p id="gameover-message">O tempo esgotou! A cruzadinha não foi finalizada.</p>
+      <div class="popup-buttons">
+        <button id="gameover-retry" class="btn btn-primary">Tentar este nível de novo</button>
+        <button id="gameover-home" class="btn btn-secondary">Voltar ao início</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="levelcomplete-popup" class="popup hidden">
+    <div class="popup-content">
+      <h2>Nível concluído!</h2>
+      <div id="levelcomplete-stats" class="stats"></div>
+      <button id="levelcomplete-next" class="btn btn-primary">Próximo nível</button>
+    </div>
+  </div>
+
+  <script src="crossword.js"></script>
+</body>
+</html>
